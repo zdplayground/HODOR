@@ -119,19 +119,19 @@ class DataClass():
 		counter = 0
 		verify = 0
 		for los in self.LOS_list:
-			if os.path.isfile(self.reference_cf_template.format(los)) and os.path.isfile(self.halo_file_template.format(los)) \
-			 and os.path.isfile(self.reference_pk_template.format(los)) and os.path.isfile(self.halo_mass_file_template.format(los)):
+			if os.path.isfile(self.reference_cf_template.format(los=los)) and os.path.isfile(self.halo_file_template.format(los=los)) \
+			 and os.path.isfile(self.reference_pk_template.format(los=los)) and os.path.isfile(self.halo_mass_file_template.format(los=los)):
 
 				verify = 1
-				ret_halo_files.append(self.halo_file_template.format(los))
-				ret_halo_mass_files.append(self.halo_mass_file_template.format(los))
+				ret_halo_files.append(self.halo_file_template.format(los=los))
+				ret_halo_mass_files.append(self.halo_mass_file_template.format(los=los))
 				
-				s, xi0, xi2, xi4 = np.loadtxt(self.reference_cf_template.format(los), usecols=self.usecols_cf, unpack=True)
+				s, xi0, xi2, xi4 = np.loadtxt(self.reference_cf_template.format(los=los), usecols=self.usecols_cf, unpack=True)
 				xi0_list.append(xi0)
 				xi2_list.append(xi2)
 				xi4_list.append(xi4)
 				
-				k, pk0, pk2, pk4 = np.loadtxt(self.reference_pk_template.format(los), usecols=self.usecols_pk, unpack=True)
+				k, pk0, pk2, pk4 = np.loadtxt(self.reference_pk_template.format(los=los), usecols=self.usecols_pk, unpack=True)
 				pk0_list.append(pk0)
 				pk2_list.append(pk2)
 				pk4_list.append(pk4)
@@ -141,14 +141,14 @@ class DataClass():
 		if verify == 0:
 			files_ = ""
 			for los in self.LOS_list:
-				if not os.path.isfile(self.reference_cf_template.format(los)):
-					files_ += " " + self.reference_cf_template.format(los)
-				if not os.path.isfile(self.halo_file_template.format(los)):
-					files_ += " " + self.halo_file_template.format(los)
-				if not os.path.isfile(self.reference_pk_template.format(los)):
-					files_ += " " + self.reference_pk_template.format(los)
-				if not os.path.isfile(self.halo_mass_file_template.format(los)):
-					files_ += " " + self.halo_mass_file_template.format(los)
+				if not os.path.isfile(self.reference_cf_template.format(los=los)):
+					files_ += " " + self.reference_cf_template.format(los=los)
+				if not os.path.isfile(self.halo_file_template.format(los=los)):
+					files_ += " " + self.halo_file_template.format(los=los)
+				if not os.path.isfile(self.reference_pk_template.format(los=los)):
+					files_ += " " + self.reference_pk_template.format(los=los)
+				if not os.path.isfile(self.halo_mass_file_template.format(los=los)):
+					files_ += " " + self.halo_mass_file_template.format(los=los)
 
 			print("ERROR: No reference file or no halo or halo mass files were found. Please check the configuration file. These files do not exist: ", files_)
 			sys.exit(1)
@@ -211,16 +211,16 @@ class DataClass():
 			beg = file_.find("LOS")
 			end = file_.find("fof")
 			los = file_[beg + 3: end - 1]
-			if os.path.isfile(self.reference_cf_template.format(los)) and os.path.isfile(self.reference_pk_template.format(los)) and os.path.isfile(self.halo_mass_file_template.format(los)):
+			if os.path.isfile(self.reference_cf_template.format(los=los)) and os.path.isfile(self.reference_pk_template.format(los=los)) and os.path.isfile(self.halo_mass_file_template.format(los=los)):
 				ret_halo_files.append(file_)
-				ret_halo_mass_files.append(self.halo_mass_file_template.format(los))
+				ret_halo_mass_files.append(self.halo_mass_file_template.format(los=los))
 
-				s, xi0, xi2, xi4 = np.loadtxt(self.reference_cf_template.format(los), usecols=self.usecols_cf, unpack=True)
+				s, xi0, xi2, xi4 = np.loadtxt(self.reference_cf_template.format(los=los), usecols=self.usecols_cf, unpack=True)
 				xi0_list.append(xi0)
 				xi2_list.append(xi2)
 				xi4_list.append(xi4)
 
-				k, pk0, pk2, pk4 = np.loadtxt(self.reference_pk_template.format(los), usecols=self.usecols_pk, unpack=True)
+				k, pk0, pk2, pk4 = np.loadtxt(self.reference_pk_template.format(los=los), usecols=self.usecols_pk, unpack=True)
 				pk0_list.append(pk0)
 				pk2_list.append(pk2)
 				pk4_list.append(pk4)
@@ -279,9 +279,11 @@ class DataClass():
 			print('INFO: min and max of X: ', np.min(data['X'][()]), np.max(data['X'][()]))
 			print('INFO: min and max of Y: ', np.min(data['Y'][()]), np.max(data['Y'][()]))
 			print('INFO: min and max of Z: ', np.min(data['Z'][()]), np.max(data['Z'][()]))
-			X_data = data['Z'][()]
+			##X_data = data['Z'][()]
+			X_data = data['X'][()]
 			Y_data = data['Y'][()]
-			Z_data = data['X'][()]
+			##Z_data = data['X'][()]
+			Z_data = data['Z'][()]
 			# Making all X,Y,Z values within 0-box_size
 			X_data[X_data < 0] = X_data[X_data < 0] + self.box_size
 			X_data[X_data > self.box_size] = X_data[X_data > self.box_size] - self.box_size
@@ -296,7 +298,7 @@ class DataClass():
 			halocat = UserSuppliedHaloCatalog(redshift=self.redshift, Lbox=self.box_size, \
 				particle_mass=self.particle_mass, halo_upid=data['PID'][()], \
 				halo_x=X_data, halo_y=Y_data, halo_z=Z_data, \
-				halo_vx=data['VZ'][()], halo_vy=data['VY'][()], halo_vz=data['VX'][()], \
+				halo_vx=data['VX'][()], halo_vy=data['VY'][()], halo_vz=data['VZ'][()], \
 				halo_id=data['ID'][()], halo_rvir=data['Rvir'][()], \
 				halo_rs=data['Rs'][()], halo_mvir=data['Mvir'][()], \
 				halo_nfw_conc=data['Rvir'][()]/data['Rs'][()], \
@@ -308,3 +310,4 @@ class DataClass():
 			del data
 		
 		return halo_cat_list
+

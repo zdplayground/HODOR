@@ -59,6 +59,68 @@ class MWCens(occupation_model_template.OccupationComponent):
     return param_dict
 
 
+# similar as MWCens but for ELG modeling
+class HMQCens(occupation_model_template.OccupationComponent):
+  '''
+    The central occupation model used by Shadab Alam:
+    Eq (9) of doi:10.1093/mnras/staa1956
+  '''
+  def __init__(self, threshold=model_defaults.default_luminosity_threshold, \
+      prim_haloprop_key=model_defaults.prim_haloprop_key, redshift=0, \
+      **kwargs):
+    '''
+      Examples
+      --------
+      cen_model = MWCens()
+      cen_model = MWCens(threshold=-19.5)
+      cen_model = MWCens(prim_haloprop_key='halo_m200b')
+    '''
+    upper_occupation_bound = 1.0
+    super(HMQCens, self).__init__(gal_type='centrals', \
+        threshold=threshold, upper_occupation_bound=upper_occupation_bound, \
+        prim_haloprop_key=prim_haloprop_key, **kwargs)
+    self.redshift = redshift
+    self.param_dict = self.get_default_parameters(self.threshold)
+
+  def mean_occupation(self, **kwargs):
+    if 'table' in list(kwargs.keys()):
+      mass = kwargs['table'][self.prim_haloprop_key]
+    elif 'prim_haloprop' in list(kwargs.keys()):
+      mass = np.atleast_1d(kwargs['prim_haloprop'])
+    else:
+      msg = ('\nYou must pass either a `table` or `prim_haloprop` argument \n'
+          'to the `mean_occupation` function of the `MWCens` class.\n')
+      raise HalotoolsError(msg)
+
+    logM = np.log10(mass)  # different from the case MWCens
+    inv_sqrt2 = 0.7071067811865475244
+    inv_sqrt2pi = 0.3989422804014327
+    #ln10 = 2.30258509299404568402
+
+    x = (logM - self.param_dict['logMcut'])* inv_sqrt2/self.param_dict['sigma_logM']
+    phi_Mh = inv_sqrt2pi/self.param_dict['sigma_logM'] * np.exp(-x**2.0)
+
+    Phi_x = 1.0+ erf(self.param_dict['gamma'] * x)   #1/2 factor cancels out the factor 2 in front of pmaxQ
+
+
+    #mean_ncen = 2.0*(self.param_dict['pmax'] - 1./self.param_dict['Q']) * phi_Mh * Phi_x
+    mean_ncen = self.param_dict['pmaxQ'] * phi_Mh * Phi_x
+    return mean_ncen
+
+
+  def get_default_parameters(self, threshold):
+    '''
+      Best-fit HOD parameters from Martin White
+    '''
+    param_dict = (
+        {'logMcut': 11.5,
+        'sigma_logM': 1.0,
+        'gamma': 4.0,
+        'pmaxQ': 0.33}
+        )
+    return param_dict
+
+
 class MWSats(occupation_model_template.OccupationComponent):
   '''
     The satellite occupation model used by Martin White:
